@@ -1098,652 +1098,269 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
     <script>
-        // Initialize data structure
-        let users = JSON.parse(localStorage.getItem('vaultynUsers')) || {};
+        // 1. Firebase Config (Your API Keys)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgbc8tFRaFyk8ze7FyX2pUJ0YqS2vgwpE",
+            authDomain: "vaultyn-9ed42.firebaseapp.com",
+            databaseURL: "https://vaultyn-9ed42-default-rtdb.firebaseio.com",
+            projectId: "vaultyn-9ed42",
+            storageBucket: "vaultyn-9ed42.firebasestorage.app",
+            messagingSenderId: "494212863916",
+            appId: "1:494212863916:web:3ced48089251c1fb764c09"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 2. State Management
+        let users = {};
         let currentUser = localStorage.getItem('vaultynCurrentUser');
-        let globalTasks = JSON.parse(localStorage.getItem('vaultynTasks')) || [];
-        let globalQuests = JSON.parse(localStorage.getItem('vaultynQuests')) || [];
+        let globalTasks = [];
+        let globalQuests = [];
 
-        // Initialize default data (Balance set to 0)
-        if (Object.keys(users).length === 0) {
-            users = {
-                'rhon': {
-                    password: 'hosted',
-                    balance: 0,
-                    income: 0,
-                    transactions: [],
-                    completedTasks: [],
-                    completedQuests: []
-                },
-                'charles': {
-                    password: 'hosted',
-                    balance: 0,
-                    income: 0,
-                    transactions: [],
-                    completedTasks: [],
-                    completedQuests: []
-                }
-            };
-            saveData();
-        }
+        // 3. Real-Time Syncing (Multiplayer Engines)
+        // Sync Users
+        db.ref('users').on('value', (snapshot) => {
+            users = snapshot.val() || {};
+            if (currentUser) updateDashboard();
+        });
 
-        // Global lists are now empty by default unless admin adds them
+        // Sync Tasks
+        db.ref('tasks').on('value', (snapshot) => {
+            const data = snapshot.val();
+            globalTasks = data ? Object.values(data) : [];
+            if (currentUser) updateTasks();
+        });
 
-        function saveData() {
-            localStorage.setItem('vaultynUsers', JSON.stringify(users));
-        }
+        // Sync Quests
+        db.ref('quests').on('value', (snapshot) => {
+            const data = snapshot.val();
+            globalQuests = data ? Object.values(data) : [];
+            if (currentUser) updateQuests();
+        });
 
+        // 4. Core App Functions
         function login() {
             const username = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
 
-            if (!username || !password) {
-                alert('Please enter both username and password');
-                return;
-            }
+            if (!username || !password) return alert('Fill fields');
 
             if (users[username] && users[username].password === password) {
                 currentUser = username;
                 localStorage.setItem('vaultynCurrentUser', currentUser);
                 showDashboard();
             } else {
-                alert('Invalid username or password');
+                alert('Invalid login');
             }
         }
 
         function showRegister() {
-            const username = prompt('Enter a username:');
+            const username = prompt('Enter a username:').trim().toLowerCase();
             if (!username) return;
-
-            const usernameLower = username.trim().toLowerCase();
-            
-            if (!usernameLower) {
-                alert('Username cannot be empty');
-                return;
-            }
-            
-            if (users[usernameLower]) {
-                alert('Username already exists. Please choose a different username.');
-                return;
-            }
+            if (users[username]) return alert('Taken!');
 
             const password = prompt('Enter a password:');
             if (!password) return;
-            
-            if (password.length < 4) {
-                alert('Password must be at least 4 characters long');
-                return;
-            }
 
-            // Create new user account with 0 balance
-            users[usernameLower] = {
+            // Online register with 0 balance
+            db.ref('users/' + username).set({
                 password: password,
                 balance: 0,
                 income: 0,
                 transactions: [],
                 completedTasks: [],
                 completedQuests: []
-            };
-            
-            saveData();
-            alert('Account created successfully! You can now login with your credentials.');
+            });
+            alert('Created! Now log in.');
         }
 
         function logout() {
             localStorage.removeItem('vaultynCurrentUser');
             currentUser = null;
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('dashboard').classList.remove('active');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
+            location.reload();
         }
 
         function showDashboard() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             
-            const user = users[currentUser];
-            document.getElementById('headerUsername').textContent = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
-            document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+            document.getElementById('headerUsername').textContent = currentUser;
+            document.getElementById('userAvatar').textContent = currentUser[0].toUpperCase();
             
-            // Check if user is admin
             const isAdmin = (currentUser === 'rhon' || currentUser === 'charles');
-            
-            // Show/hide admin nav
-            if (isAdmin) {
-                document.getElementById('adminNav').style.display = 'flex';
-            } else {
-                document.getElementById('adminNav').style.display = 'none';
-            }
-            
-            // Show/hide balance action buttons for non-admin users
-            const balanceActions = document.querySelector('.balance-actions');
-            if (isAdmin) {
-                balanceActions.style.display = 'flex';
-            } else {
-                balanceActions.style.display = 'none';
-            }
+            document.getElementById('adminNav').style.display = isAdmin ? 'flex' : 'none';
+            document.querySelector('.balance-actions').style.display = isAdmin ? 'flex' : 'none';
             
             updateDashboard();
         }
 
         function updateDashboard() {
             const user = users[currentUser];
+            if (!user) return;
             
-            // Update balance display
             document.getElementById('balanceAmount').textContent = `₣ ${user.balance.toLocaleString()}`;
             document.getElementById('incomeAmount').textContent = `₣ ${user.income.toLocaleString()}`;
             document.getElementById('frankbitAmount').textContent = `₣ ${user.balance.toLocaleString()}`;
             
-            // Update rank
-            const sortedUsers = Object.entries(users).sort((a, b) => b[1].balance - a[1].balance);
-            const rank = sortedUsers.findIndex(u => u[0] === currentUser) + 1;
+            const sorted = Object.entries(users).sort((a, b) => b[1].balance - a[1].balance);
+            const rank = sorted.findIndex(u => u[0] === currentUser) + 1;
             document.getElementById('userRank').textContent = `#${rank}`;
             
-            // Update transactions
-            updateTransactions();
-            
-            // Update leaderboard
-            updateLeaderboard();
-            
-            // Update tasks and quests
-            updateTasks();
-            updateQuests();
-            
-            // Update exchange calculator
-            document.getElementById('exchangeAmount').addEventListener('input', calculateExchange);
+            updateTransactions(user);
+            updateLeaderboard(sorted);
         }
 
-        function updateTransactions() {
-            const user = users[currentUser];
-            const transactionList = document.getElementById('transactionList');
+        function updateTransactions(user) {
+            const list = document.getElementById('transactionList');
+            const txs = user.transactions ? Object.values(user.transactions) : [];
             
-            if (user.transactions.length === 0) {
-                transactionList.innerHTML = `
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <h4>No transactions yet</h4>
-                            <div class="transaction-date">Start using Vaultyn today!</div>
-                        </div>
-                    </div>
-                `;
+            if (txs.length === 0) {
+                list.innerHTML = `<div class="transaction-item"><h4>No history</h4></div>`;
                 return;
             }
             
-            transactionList.innerHTML = user.transactions.slice().reverse().map(t => `
+            list.innerHTML = txs.slice().reverse().map(t => `
                 <div class="transaction-item">
-                    <div class="transaction-info">
-                        <h4>${t.type}</h4>
-                        <div class="transaction-date">${t.date}</div>
-                    </div>
+                    <div class="transaction-info"><h4>${t.type}</h4><small>${t.date}</small></div>
                     <div class="transaction-amount ${t.amount >= 0 ? 'positive' : 'negative'}">
                         ${t.amount >= 0 ? '+' : ''}₣ ${Math.abs(t.amount).toLocaleString()}
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
-        function updateLeaderboard() {
-            const sortedUsers = Object.entries(users).sort((a, b) => b[1].balance - a[1].balance);
-            const leaderboardList = document.getElementById('leaderboardList');
-            
-            leaderboardList.innerHTML = sortedUsers.map((u, index) => {
-                let rankClass = '';
-                if (index === 0) rankClass = 'gold';
-                else if (index === 1) rankClass = 'silver';
-                else if (index === 2) rankClass = 'bronze';
-                
-                return `
-                    <div class="leaderboard-item">
-                        <div class="leaderboard-rank ${rankClass}">#${index + 1}</div>
-                        <div class="leaderboard-info">
-                            <div class="leaderboard-name">${u[0].charAt(0).toUpperCase() + u[0].slice(1)}</div>
-                        </div>
-                        <div class="leaderboard-balance">₣ ${u[1].balance.toLocaleString()}</div>
-                    </div>
-                `;
-            }).join('');
+        function updateLeaderboard(sorted) {
+            document.getElementById('leaderboardList').innerHTML = sorted.map((u, i) => `
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank">#${i + 1}</div>
+                    <div class="leaderboard-info"><div class="leaderboard-name">${u[0]}</div></div>
+                    <div class="leaderboard-balance">₣ ${u[1].balance.toLocaleString()}</div>
+                </div>`).join('');
         }
 
         function updateTasks() {
             const user = users[currentUser];
-            const taskList = document.getElementById('taskList');
-            
-            if (globalTasks.length === 0) {
-                taskList.innerHTML = '<p style="color: #666; padding: 20px;">No tasks available yet. Check back soon!</p>';
-                return;
-            }
-            
-            taskList.innerHTML = globalTasks.map(task => {
-                const completed = user.completedTasks.includes(task.id);
+            const list = document.getElementById('taskList');
+            if (globalTasks.length === 0) return list.innerHTML = '<p>No tasks yet.</p>';
+
+            list.innerHTML = globalTasks.map(t => {
+                const done = user.completedTasks && Object.values(user.completedTasks).includes(t.id);
                 return `
                     <div class="task-card">
-                        <div class="task-info">
-                            <h3>${task.title}</h3>
-                            <div class="task-description">${task.description}</div>
-                            <div class="task-reward">Reward: ₣${task.reward}</div>
-                        </div>
-                        <button class="complete-btn" onclick="completeTask('${task.id}')" ${completed ? 'disabled' : ''}>
-                            ${completed ? 'Completed' : 'Complete'}
+                        <div class="task-info"><h3>${t.title}</h3><p>${t.description}</p><p class="task-reward">₣${t.reward}</p></div>
+                        <button class="complete-btn" onclick="claimTask('tasks', '${t.id}', ${t.reward})" ${done ? 'disabled' : ''}>
+                            ${done ? 'Done' : 'Claim'}
                         </button>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
         function updateQuests() {
             const user = users[currentUser];
-            const questList = document.getElementById('questList');
-            
-            if (globalQuests.length === 0) {
-                questList.innerHTML = '<p style="color: #666; padding: 20px;">No quests available yet. Check back soon!</p>';
-                return;
-            }
-            
-            questList.innerHTML = globalQuests.map(quest => {
-                const completed = user.completedQuests.includes(quest.id);
+            const list = document.getElementById('questList');
+            if (globalQuests.length === 0) return list.innerHTML = '<p>No quests yet.</p>';
+
+            list.innerHTML = globalQuests.map(q => {
+                const done = user.completedQuests && Object.values(user.completedQuests).includes(q.id);
                 return `
                     <div class="task-card">
-                        <div class="task-info">
-                            <h3>${quest.title}</h3>
-                            <div class="task-description">${quest.description}</div>
-                            <div class="task-reward">Reward: ₣${quest.reward}</div>
-                        </div>
-                        <button class="complete-btn" onclick="completeQuest('${quest.id}')" ${completed ? 'disabled' : ''}>
-                            ${completed ? 'Completed' : 'Complete'}
+                        <div class="task-info"><h3>${q.title}</h3><p>${q.description}</p><p class="task-reward">₣${q.reward}</p></div>
+                        <button class="complete-btn" onclick="claimTask('quests', '${q.id}', ${q.reward})" ${done ? 'disabled' : ''}>
+                            ${done ? 'Done' : 'Claim'}
                         </button>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
-        function completeTask(taskId) {
-            const user = users[currentUser];
-            const task = globalTasks.find(t => t.id === taskId);
-            
-            if (!task || user.completedTasks.includes(taskId)) return;
-            
-            user.balance += task.reward;
-            user.completedTasks.push(taskId);
-            user.transactions.push({
-                type: `Task: ${task.title}`,
-                amount: task.reward,
-                date: new Date().toLocaleString()
+        function claimTask(type, id, reward) {
+            const newBal = users[currentUser].balance + reward;
+            db.ref(`users/${currentUser}`).update({ balance: newBal });
+            db.ref(`users/${currentUser}/completed${type === 'tasks' ? 'Tasks' : 'Quests'}`).push(id);
+            db.ref(`users/${currentUser}/transactions`).push({
+                type: 'Claim Reward', amount: reward, date: new Date().toLocaleString()
             });
-            
-            saveData();
-            updateDashboard();
-            alert(`Task completed! You earned ₣${task.reward}`);
+            alert('Claimed!');
         }
 
-        function completeQuest(questId) {
-            const user = users[currentUser];
-            const quest = globalQuests.find(q => q.id === questId);
-            
-            if (!quest || user.completedQuests.includes(questId)) return;
-            
-            user.balance += quest.reward;
-            user.completedQuests.push(questId);
-            user.transactions.push({
-                type: `Quest: ${quest.title}`,
-                amount: quest.reward,
-                date: new Date().toLocaleString()
-            });
-            
-            saveData();
-            updateDashboard();
-            alert(`Quest completed! You earned ₣${quest.reward}`);
-        }
-
-        function calculateExchange() {
-            const amount = parseInt(document.getElementById('exchangeAmount').value) || 0;
-            const pesos = (amount / 100) * 10;
-            document.getElementById('pesosReceive').value = pesos.toFixed(2) + ' Pesos';
-        }
-
-        function exchangeFrankbits() {
-            const amount = parseInt(document.getElementById('exchangeAmount').value);
-            const user = users[currentUser];
-            
-            if (!amount || amount < 100 || amount > 5000) {
-                alert('Please enter an amount between 100 and 5000 Frankbits');
-                return;
-            }
-            
-            if (amount % 100 !== 0) {
-                alert('Amount must be in multiples of 100');
-                return;
-            }
-            
-            if (amount > user.balance) {
-                alert('Insufficient balance');
-                return;
-            }
-            
-            const pesos = (amount / 100) * 10;
-            user.balance -= amount;
-            user.transactions.push({
-                type: 'Exchange to Pesos',
-                amount: -amount,
-                date: new Date().toLocaleString()
-            });
-            
-            saveData();
-            updateDashboard();
-            
-            // Generate transaction ID
-            const txId = 'TX' + Date.now().toString().slice(-8);
-            
-            // Show receipt
-            document.getElementById('exchangeForm').style.display = 'none';
-            document.getElementById('exchangeReceipt').style.display = 'block';
-            document.getElementById('receiptTxId').textContent = txId;
-            document.getElementById('receiptDate').textContent = new Date().toLocaleString();
-            document.getElementById('receiptUsername').textContent = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
-            document.getElementById('receiptFrankbits').textContent = '₣ ' + amount.toLocaleString();
-            document.getElementById('receiptPesos').textContent = '₱ ' + pesos.toFixed(2);
-            
-            document.getElementById('exchangeAmount').value = '';
-            document.getElementById('pesosReceive').value = '';
-        }
-
-        function closeReceipt() {
-            document.getElementById('exchangeForm').style.display = 'block';
-            document.getElementById('exchangeReceipt').style.display = 'none';
-        }
-
-        function showTab(tabName) {
-            // Update nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.target.closest('.nav-item').classList.add('active');
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            
-            // Reset exchange form when switching tabs
-            if (tabName === 'exchange') {
-                closeReceipt();
-            }
-        }
-
-        function showAddBalanceModal() {
-            document.getElementById('addBalanceModal').classList.add('active');
-        }
-
-        function showAddIncomeModal() {
-            document.getElementById('addIncomeModal').classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function addBalance() {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. This feature is only available to administrators.');
-                return;
-            }
-            
-            const amount = parseInt(document.getElementById('addBalanceInput').value);
-            const user = users[currentUser];
-            
-            if (!amount || amount <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-            
-            user.balance += amount;
-            user.transactions.push({
-                type: 'Balance Added',
-                amount: amount,
-                date: new Date().toLocaleString()
-            });
-            
-            saveData();
-            updateDashboard();
-            closeModal('addBalanceModal');
-            document.getElementById('addBalanceInput').value = '';
-        }
-
-        function addIncome() {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. This feature is only available to administrators.');
-                return;
-            }
-            
-            const amount = parseInt(document.getElementById('addIncomeInput').value);
-            const user = users[currentUser];
-            
-            if (!amount || amount <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-            
-            user.income += amount;
-            user.balance += amount;
-            user.transactions.push({
-                type: 'Income Added',
-                amount: amount,
-                date: new Date().toLocaleString()
-            });
-            
-            saveData();
-            updateDashboard();
-            closeModal('addIncomeModal');
-            document.getElementById('addIncomeInput').value = '';
-        }
-
-        // Admin functions
+        // 5. Admin Panel Functions
         function searchUser() {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. Admin privileges required.');
-                return;
-            }
-            
-            const searchUsername = document.getElementById('adminSearchUser').value.trim().toLowerCase();
-            const resultDiv = document.getElementById('userSearchResult');
-            
-            if (!searchUsername) {
-                resultDiv.innerHTML = '<div class="alert alert-error">Please enter a username to search</div>';
-                return;
-            }
-            
-            if (!users[searchUsername]) {
-                resultDiv.innerHTML = '<div class="alert alert-error">User not found: ' + searchUsername + '</div>';
-                return;
-            }
-            
-            const userData = users[searchUsername];
-            resultDiv.innerHTML = `
+            const name = document.getElementById('adminSearchUser').value.trim().toLowerCase();
+            const res = document.getElementById('userSearchResult');
+            const target = users[name];
+            if (!target) return res.innerHTML = 'Not found';
+
+            res.innerHTML = `
                 <div class="user-result">
-                    <h3>${searchUsername.charAt(0).toUpperCase() + searchUsername.slice(1)}</h3>
-                    <div class="user-stat-row">
-                        <span class="receipt-label">Balance:</span>
-                        <span class="user-stat-value">₣${userData.balance.toLocaleString()}</span>
-                    </div>
-                    <div class="user-stat-row">
-                        <span class="receipt-label">Income:</span>
-                        <span class="user-stat-value">₣${userData.income.toLocaleString()}</span>
-                    </div>
-                    <div class="user-stat-row">
-                        <span class="receipt-label">Transactions:</span>
-                        <span class="user-stat-value">${userData.transactions.length}</span>
-                    </div>
+                    <h3>${name}</h3>
+                    <p>Balance: ₣${target.balance}</p>
                     <div class="admin-controls">
-                        <input type="number" class="admin-input" id="setBalance_${searchUsername}" placeholder="Set Balance">
-                        <button class="admin-btn" onclick="setUserBalance('${searchUsername}')">Set Balance</button>
-                        <input type="number" class="admin-input" id="addBalance_${searchUsername}" placeholder="Add Balance">
-                        <button class="admin-btn" onclick="addUserBalance('${searchUsername}')">Add Balance</button>
-                        <input type="number" class="admin-input" id="setIncome_${searchUsername}" placeholder="Set Income">
-                        <button class="admin-btn" onclick="setUserIncome('${searchUsername}')">Set Income</button>
+                        <input type="number" class="admin-input" id="admInp" placeholder="Amount">
+                        <button class="admin-btn" onclick="adminAdjust('${name}', 'balance')">Set Bal</button>
+                        <button class="admin-btn" onclick="adminAdjust('${name}', 'add')">Add Bal</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
-        function setUserBalance(username) {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. Admin privileges required.');
-                return;
-            }
-            
-            const newBalance = parseInt(document.getElementById(`setBalance_${username}`).value);
-            
-            if (isNaN(newBalance) || newBalance < 0) {
-                alert('Please enter a valid balance');
-                return;
-            }
-            
-            const oldBalance = users[username].balance;
-            users[username].balance = newBalance;
-            users[username].transactions.push({
-                type: 'Admin: Balance Set',
-                amount: newBalance - oldBalance,
-                date: new Date().toLocaleString()
+        function adminAdjust(target, type) {
+            const val = parseInt(document.getElementById('admInp').value);
+            if (isNaN(val)) return;
+            let final = type === 'add' ? users[target].balance + val : val;
+            db.ref(`users/${target}`).update({ balance: final });
+            db.ref(`users/${target}/transactions`).push({
+                type: 'Admin Edit', amount: type === 'add' ? val : (final - users[target].balance), date: new Date().toLocaleString()
             });
-            
-            saveData();
-            searchUser(); // Refresh the display
-            if (username === currentUser) updateDashboard();
-            alert(`Balance set to ₣${newBalance.toLocaleString()} for ${username}`);
-        }
-
-        function addUserBalance(username) {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. Admin privileges required.');
-                return;
-            }
-            
-            const addAmount = parseInt(document.getElementById(`addBalance_${username}`).value);
-            
-            if (isNaN(addAmount) || addAmount <= 0) {
-                alert('Please enter a valid amount to add');
-                return;
-            }
-            
-            users[username].balance += addAmount;
-            users[username].transactions.push({
-                type: 'Admin: Balance Added',
-                amount: addAmount,
-                date: new Date().toLocaleString()
-            });
-            
-            saveData();
-            searchUser(); // Refresh the display
-            if (username === currentUser) updateDashboard();
-            alert(`Added ₣${addAmount.toLocaleString()} to ${username}'s balance`);
-        }
-
-        function setUserIncome(username) {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. Admin privileges required.');
-                return;
-            }
-            
-            const newIncome = parseInt(document.getElementById(`setIncome_${username}`).value);
-            
-            if (isNaN(newIncome) || newIncome < 0) {
-                alert('Please enter a valid income');
-                return;
-            }
-            
-            users[username].income = newIncome;
-            users[username].transactions.push({
-                type: 'Admin: Income Updated',
-                amount: 0,
-                date: new Date().toLocaleString()
-            });
-            
-            saveData();
-            searchUser(); // Refresh the display
-            if (username === currentUser) updateDashboard();
-            alert(`Income set to ₣${newIncome.toLocaleString()} for ${username}`);
+            searchUser();
         }
 
         function createTask() {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. Admin privileges required.');
-                return;
-            }
-            
-            const title = document.getElementById('taskTitle').value;
-            const description = document.getElementById('taskDescription').value;
-            const reward = parseInt(document.getElementById('taskReward').value);
-            
-            if (!title || !description || !reward) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            const newTask = {
-                id: 'task' + Date.now(),
-                title: title,
-                description: description,
-                reward: reward
-            };
-            
-            globalTasks.push(newTask);
-            localStorage.setItem('vaultynTasks', JSON.stringify(globalTasks));
-            
-            document.getElementById('taskTitle').value = '';
-            document.getElementById('taskDescription').value = '';
-            document.getElementById('taskReward').value = '';
-            
-            updateTasks();
-            alert('Task created successfully!');
+            const id = 'task_' + Date.now();
+            db.ref('tasks/' + id).set({
+                id, title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                reward: parseInt(document.getElementById('taskReward').value)
+            });
+            alert('Created!');
         }
 
         function createQuest() {
-            // Admin-only function
-            if (currentUser !== 'rhon' && currentUser !== 'charles') {
-                alert('Access denied. Admin privileges required.');
-                return;
-            }
-            
-            const title = document.getElementById('questTitle').value;
-            const description = document.getElementById('questDescription').value;
-            const reward = parseInt(document.getElementById('questReward').value);
-            
-            if (!title || !description || !reward) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            const newQuest = {
-                id: 'quest' + Date.now(),
-                title: title,
-                description: description,
-                reward: reward
-            };
-            
-            globalQuests.push(newQuest);
-            localStorage.setItem('vaultynQuests', JSON.stringify(globalQuests));
-            
-            document.getElementById('questTitle').value = '';
-            document.getElementById('questDescription').value = '';
-            document.getElementById('questReward').value = '';
-            
-            updateQuests();
-            alert('Quest created successfully!');
+            const id = 'quest_' + Date.now();
+            db.ref('quests/' + id).set({
+                id, title: document.getElementById('questTitle').value,
+                description: document.getElementById('questDescription').value,
+                reward: parseInt(document.getElementById('questReward').value)
+            });
+            alert('Created!');
         }
 
-        // Check if user is already logged in
-        if (currentUser && users[currentUser]) {
-            showDashboard();
+        // 6. UI Navigation
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+            event.currentTarget.classList.add('active');
         }
+
+        function closeModal(m) { document.getElementById(m).classList.remove('active'); }
+        function showAddBalanceModal() { document.getElementById('addBalanceModal').classList.add('active'); }
+        function showAddIncomeModal() { document.getElementById('addIncomeModal').classList.add('active'); }
+
+        function addBalance() { adminAdjust(currentUser, 'add'); closeModal('addBalanceModal'); }
+        function addIncome() {
+            const val = parseInt(document.getElementById('addIncomeInput').value);
+            db.ref(`users/${currentUser}`).update({ 
+                balance: users[currentUser].balance + val,
+                income: users[currentUser].income + val 
+            });
+            closeModal('addIncomeModal');
+        }
+
+        // Auto-login
+        if (currentUser) showDashboard();
     </script>
 </body>
 </html>
