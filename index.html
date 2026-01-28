@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaultyn - Digital Banking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            background: white;
+        }
+
+        /* Login Page */
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 60px 50px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            color: #2c2e2f;
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .login-header p {
+            color: #6c7378;
+            font-size: 0.95em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c2e2f;
+            font-weight: 400;
+            font-size: 0.95em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #cbd2d9;
+            border-radius: 4px;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #0070ba;
+            box-shadow: 0 0 0 2px rgba(0, 112, 186, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #0070ba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #005a94;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0070ba;
+            border: 1px solid #cbd2d9;
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f7fa;
+            border-color: #0070ba;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        /* Header */
+        .top-header {
+            background: #0070ba;
+            color: white;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-header-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .top-header-title {
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .top-header-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .top-header-link {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9em;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
+        .top-header-link:hover {
+            opacity: 1;
+        }
+
+        .top-header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0070ba;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            background: white;
+            border-bottom: 1px solid #e1e8ee;
+            padding: 0 30px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-item {
+            padding: 16px 20px;
+            cursor: pointer;
+            color: #2c2e2f;
+            font-size: 0.95em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover {
+            color: #0070ba;
+            background: #f5f7fa;
+        }
+
+        .nav-item.active {
+            color: #0070ba;
+            border-bottom-color: #0070ba;
+            background: #f5f7fa;
+        }
+
+        .nav-item i {
+            font-size: 1.1em;
+        }
+
+        /* Content Area */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 1.8em;
+            color: #2c2e2f;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .page-subtitle {
+            color: #6c7378;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-size: 1.3em;
+            color: #2c2e2f;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, #0070ba 0%, #005a94 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .balance-label {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 2.8em;
+            font-weight: 300;
+            margin-bottom: 25px;
+        }
+
+        .balance-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #0070ba;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #f5f7fa;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-label {
+            color: #6c7378;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: 300;
+            color: #2c2e2f;
+        }
+
+        /* Transaction List */
+        .transaction-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .transaction-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e1e8ee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info h4 {
+            margin-bottom: 5px;
+            color: #2c2e2f;
+            font-weight: 500;
+        }
+
+        .transaction-date {
+            color: #6c7378;
+            font-size: 0.85em;
+        }
+
+        .transaction-amount {
+            font-weight: 500;
+            font-size: 1.15em;
+        }
+
+        .transaction-amount.positive {
+            color: #28a745;
+        }
+
+        .transaction-amount.negative {
+            color: #dc3545;
+        }
+
+        /* Leaderboard */
+        .leaderboard-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .leaderboard-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e1e8ee;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-rank {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #0070ba;
+            min-width: 50px;
+        }
+
+        .leaderboard-rank.gold { color: #FFD700; }
+        .leaderboard-rank.silver { color: #C0C0C0; }
+        .leaderboard-rank.bronze { color: #CD7F32; }
+
+        .leaderboard-info {
+            flex: 1;
+        }
+
+        .leaderboard-name {
+            font-weight: 500;
+            color: #2c2e2f;
+            margin-bottom: 5px;
+        }
+
+        .leaderboard-balance {
+            font-size: 1.25em;
+            font-weight: 500;
+            color: #0070ba;
+        }
+
+        /* Exchange */
+        .exchange-card {
+            background: white;
+            padding: 35px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .exchange-rate {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .exchange-rate-text {
+            font-size: 1.2em;
+            color: #0070ba;
+            font-weight: 500;
+        }
+
+        .exchange-limits {
+            font-size: 0.9em;
+            color: #6c7378;
+            margin-top: 8px;
+        }
+
+        /* Tasks & Quests */
+        .task-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .task-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-info h3 {
+            color: #2c2e2f;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .task-description {
+            color: #6c7378;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .task-reward {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .complete-btn {
+            padding: 10px 24px;
+            background: #0070ba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .complete-btn:hover {
+            background: #005a94;
+        }
+
+        .complete-btn:disabled {
+            background: #cbd2d9;
+            cursor: not-allowed;
+        }
+
+        /* Admin Panel */
+        .admin-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .admin-section-header {
+            color: #2c2e2f;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e1e8ee;
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #cbd2d9;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            background: #0070ba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #005a94;
+        }
+
+        .user-result {
+            background: #f5f7fa;
+            padding: 25px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .user-result h3 {
+            color: #2c2e2f;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .user-stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #6c7378;
+        }
+
+        .user-stat-value {
+            color: #2c2e2f;
+            font-weight: 500;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .admin-input {
+            padding: 10px 14px;
+            border: 1px solid #cbd2d9;
+            border-radius: 4px;
+            width: 140px;
+            font-size: 14px;
+        }
+
+        .admin-btn {
+            padding: 10px 20px;
+            background: #0070ba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .admin-btn:hover {
+            background: #005a94;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-content h2 {
+            color: #2c2e2f;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .close-modal {
+            background: #f5f7fa;
+            color: #2c2e2f;
+            border: 1px solid #cbd2d9;
+            margin-top: 12px;
+        }
+
+        .close-modal:hover {
+            background: #e1e8ee;
+        }
+
+        /* Receipt */
+        .receipt-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            max-width: 500px;
+            margin: 0 auto;
+            border: 2px dashed #0070ba;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e1e8ee;
+        }
+
+        .receipt-title {
+            font-size: 1.8em;
+            color: #0070ba;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .receipt-subtitle {
+            color: #6c7378;
+            font-size: 0.9em;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f7fa;
+        }
+
+        .receipt-label {
+            color: #6c7378;
+        }
+
+        .receipt-value {
+            color: #2c2e2f;
+            font-weight: 500;
+        }
+
+        .receipt-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e8ee;
+        }
+
+        .receipt-total .receipt-row {
+            border-bottom: none;
+            font-size: 1.2em;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e1e8ee;
+            color: #0070ba;
+            font-weight: 600;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .top-header-left {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-bar {
+                overflow-x: auto;
+                padding: 0 15px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .balance-amount {
+                font-size: 2em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .complete-btn {
+                width: 100%;
+            }
+
+            .admin-controls {
+                flex-direction: column;
+            }
+
+            .admin-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper" id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>Vaultyn</h1>
+                <p>Secure Digital Banking Platform</p>
+            </div>
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <button class="btn" onclick="login()">Sign In</button>
+            <button class="btn btn-secondary" onclick="showRegister()">Create Account</button>
+        </div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="top-header">
+            <div class="top-header-left">
+                <div class="top-header-title">Vaultyn Banking</div>
+                <div class="top-header-links">
+                    <span class="top-header-link">Help</span>
+                    <span class="top-header-link">Support</span>
+                </div>
+            </div>
+            <div class="top-header-right">
+                <div class="user-menu">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="headerUsername">User</span>
+                </div>
+                <div class="logout-btn" onclick="logout()">Logout</div>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="showTab('home')">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" onclick="showTab('transactions')">
+                <i class="fas fa-receipt"></i>
+                <span>Transactions</span>
+            </div>
+            <div class="nav-item" onclick="showTab('leaderboard')">
+                <i class="fas fa-trophy"></i>
+                <span>Leaderboard</span>
+            </div>
+            <div class="nav-item" onclick="showTab('exchange')">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Exchange</span>
+            </div>
+            <div class="nav-item" onclick="showTab('tasks')">
+                <i class="fas fa-tasks"></i>
+                <span>Tasks</span>
+            </div>
+            <div class="nav-item" onclick="showTab('quests')">
+                <i class="fas fa-star"></i>
+                <span>Quests</span>
+            </div>
+            <div class="nav-item" id="adminNav" style="display: none;" onclick="showTab('admin')">
+                <i class="fas fa-cog"></i>
+                <span>Admin</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tab-content active" id="homeTab">
+                <h1 class="page-title">Account Overview</h1>
+                <p class="page-subtitle">Welcome back! Here's your financial summary</p>
+                
+                <div class="balance-card">
+                    <div class="balance-label">Total Balance</div>
+                    <div class="balance-amount" id="balanceAmount">₣ 0</div>
+                    <div class="balance-actions">
+                        <button class="action-btn" onclick="showAddBalanceModal()">
+                            <i class="fas fa-plus-circle"></i> Add Balance
+                        </button>
+                        <button class="action-btn" onclick="showAddIncomeModal()">
+                            <i class="fas fa-dollar-sign"></i> Add Income
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Income</div>
+                        <div class="stat-value" id="incomeAmount">₣ 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Frankbits</div>
+                        <div class="stat-value" id="frankbitAmount">₣ 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Your Rank</div>
+                        <div class="stat-value" id="userRank">#-</div>
+                    </div>
+                </div>
+            </div>
+
+                <div class="tab-content" id="transactionsTab">
+                    <h1 class="page-title">Transaction History</h1>
+                    <p class="page-subtitle">View all your recent transactions</p>
+                    <div class="transaction-list" id="transactionList">
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>No transactions yet</h4>
+                                <div class="transaction-date">Start using Vaultyn today!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="leaderboardTab">
+                    <h1 class="page-title">Leaderboard</h1>
+                    <p class="page-subtitle">Top users ranked by balance</p>
+                    <div class="leaderboard-list" id="leaderboardList"></div>
+                </div>
+
+                <div class="tab-content" id="exchangeTab">
+                    <h1 class="page-title">Currency Exchange</h1>
+                    <p class="page-subtitle">Convert your Frankbits to Pesos</p>
+                    
+                    <div id="exchangeForm">
+                        <div class="exchange-card">
+                            <div class="exchange-rate">
+                                <div class="exchange-rate-text">100 Frankbits = 10 Pesos</div>
+                                <div class="exchange-limits">Minimum: 100 FB | Maximum: 5000 FB</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="exchangeAmount">Frankbits to Exchange</label>
+                                <input type="number" id="exchangeAmount" placeholder="Enter amount (100-5000)" min="100" max="5000" step="100">
+                            </div>
+                            <div class="input-group">
+                                <label>You will receive</label>
+                                <input type="text" id="pesosReceive" readonly placeholder="0 Pesos">
+                            </div>
+                            <button class="btn" onclick="exchangeFrankbits()">Exchange Now</button>
+                        </div>
+                    </div>
+                    
+                    <div id="exchangeReceipt" style="display: none;">
+                        <div class="receipt-container">
+                            <div class="receipt-header">
+                                <div class="receipt-title">Exchange Receipt</div>
+                                <div class="receipt-subtitle">Transaction Successful</div>
+                            </div>
+                            <div class="receipt-row">
+                                <span class="receipt-label">Transaction ID:</span>
+                                <span class="receipt-value" id="receiptTxId">-</span>
+                            </div>
+                            <div class="receipt-row">
+                                <span class="receipt-label">Date & Time:</span>
+                                <span class="receipt-value" id="receiptDate">-</span>
+                            </div>
+                            <div class="receipt-row">
+                                <span class="receipt-label">Username:</span>
+                                <span class="receipt-value" id="receiptUsername">-</span>
+                            </div>
+                            <div class="receipt-row">
+                                <span class="receipt-label">Frankbits Exchanged:</span>
+                                <span class="receipt-value" id="receiptFrankbits">-</span>
+                            </div>
+                            <div class="receipt-row">
+                                <span class="receipt-label">Exchange Rate:</span>
+                                <span class="receipt-value">100 FB = 10 Pesos</span>
+                            </div>
+                            <div class="receipt-total">
+                                <div class="receipt-row">
+                                    <span class="receipt-label">Amount Received:</span>
+                                    <span class="receipt-value" id="receiptPesos">-</span>
+                                </div>
+                            </div>
+                            <div class="receipt-footer">
+                                ⚠️ IMPORTANT: Screenshot this receipt for your records
+                            </div>
+                            <button class="btn" onclick="closeReceipt()" style="margin-top: 20px;">Back to Exchange</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tasksTab">
+                    <h1 class="page-title">Available Tasks</h1>
+                    <p class="page-subtitle">Complete tasks to earn Frankbits</p>
+                    <div class="task-grid" id="taskList"></div>
+                </div>
+
+                <div class="tab-content" id="questsTab">
+                    <h1 class="page-title">Available Quests</h1>
+                    <p class="page-subtitle">Special missions with bigger rewards</p>
+                    <div class="task-grid" id="questList"></div>
+                </div>
+
+                <div class="tab-content" id="adminTab">
+                    <h1 class="page-title">Admin Panel</h1>
+                    <p class="page-subtitle">Manage users, tasks, and quests</p>
+                    
+                    <div class="admin-section">
+                        <h2 class="admin-section-header">Manage Users</h2>
+                        <div class="search-container">
+                            <input type="text" class="search-input" id="adminSearchUser" placeholder="Enter username to search...">
+                            <button class="search-btn" onclick="searchUser()">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                        <div id="userSearchResult"></div>
+                    </div>
+
+                    <div class="admin-section">
+                        <h2 class="admin-section-header">Create Task</h2>
+                        <div class="input-group">
+                            <label>Task Title</label>
+                            <input type="text" id="taskTitle" placeholder="Enter task title">
+                        </div>
+                        <div class="input-group">
+                            <label>Task Description</label>
+                            <input type="text" id="taskDescription" placeholder="Enter task description">
+                        </div>
+                        <div class="input-group">
+                            <label>Reward (Frankbits)</label>
+                            <input type="number" id="taskReward" placeholder="Enter reward amount">
+                        </div>
+                        <button class="btn" onclick="createTask()">Create Task</button>
+                    </div>
+
+                    <div class="admin-section">
+                        <h2 class="admin-section-header">Create Quest</h2>
+                        <div class="input-group">
+                            <label>Quest Title</label>
+                            <input type="text" id="questTitle" placeholder="Enter quest title">
+                        </div>
+                        <div class="input-group">
+                            <label>Quest Description</label>
+                            <input type="text" id="questDescription" placeholder="Enter quest description">
+                        </div>
+                        <div class="input-group">
+                            <label>Reward (Frankbits)</label>
+                            <input type="number" id="questReward" placeholder="Enter reward amount">
+                        </div>
+                        <button class="btn" onclick="createQuest()">Create Quest</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addBalanceModal">
+        <div class="modal-content">
+            <h2>Add Balance</h2>
+            <div class="input-group">
+                <label>Amount (Frankbits)</label>
+                <input type="number" id="addBalanceInput" placeholder="Enter amount">
+            </div>
+            <button class="btn" onclick="addBalance()">Add Balance</button>
+            <button class="btn close-modal" onclick="closeModal('addBalanceModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div class="modal" id="addIncomeModal">
+        <div class="modal-content">
+            <h2>Add Income</h2>
+            <div class="input-group">
+                <label>Amount (Frankbits)</label>
+                <input type="number" id="addIncomeInput" placeholder="Enter amount">
+            </div>
+            <button class="btn" onclick="addIncome()">Add Income</button>
+            <button class="btn close-modal" onclick="closeModal('addIncomeModal')">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data structure
+        let users = JSON.parse(localStorage.getItem('vaultynUsers')) || {};
+        let currentUser = localStorage.getItem('vaultynCurrentUser');
+        let globalTasks = JSON.parse(localStorage.getItem('vaultynTasks')) || [];
+        let globalQuests = JSON.parse(localStorage.getItem('vaultynQuests')) || [];
+
+        // Initialize default data (Balance set to 0)
+        if (Object.keys(users).length === 0) {
+            users = {
+                'rhon': {
+                    password: 'hosted',
+                    balance: 0,
+                    income: 0,
+                    transactions: [],
+                    completedTasks: [],
+                    completedQuests: []
+                },
+                'charles': {
+                    password: 'hosted',
+                    balance: 0,
+                    income: 0,
+                    transactions: [],
+                    completedTasks: [],
+                    completedQuests: []
+                }
+            };
+            saveData();
+        }
+
+        // Global lists are now empty by default unless admin adds them
+
+        function saveData() {
+            localStorage.setItem('vaultynUsers', JSON.stringify(users));
+        }
+
+        function login() {
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+
+            if (users[username] && users[username].password === password) {
+                currentUser = username;
+                localStorage.setItem('vaultynCurrentUser', currentUser);
+                showDashboard();
+            } else {
+                alert('Invalid username or password');
+            }
+        }
+
+        function showRegister() {
+            const username = prompt('Enter a username:');
+            if (!username) return;
+
+            const usernameLower = username.trim().toLowerCase();
+            
+            if (!usernameLower) {
+                alert('Username cannot be empty');
+                return;
+            }
+            
+            if (users[usernameLower]) {
+                alert('Username already exists. Please choose a different username.');
+                return;
+            }
+
+            const password = prompt('Enter a password:');
+            if (!password) return;
+            
+            if (password.length < 4) {
+                alert('Password must be at least 4 characters long');
+                return;
+            }
+
+            // Create new user account with 0 balance
+            users[usernameLower] = {
+                password: password,
+                balance: 0,
+                income: 0,
+                transactions: [],
+                completedTasks: [],
+                completedQuests: []
+            };
+            
+            saveData();
+            alert('Account created successfully! You can now login with your credentials.');
+        }
+
+        function logout() {
+            localStorage.removeItem('vaultynCurrentUser');
+            currentUser = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            
+            const user = users[currentUser];
+            document.getElementById('headerUsername').textContent = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+            document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+            
+            // Check if user is admin
+            const isAdmin = (currentUser === 'rhon' || currentUser === 'charles');
+            
+            // Show/hide admin nav
+            if (isAdmin) {
+                document.getElementById('adminNav').style.display = 'flex';
+            } else {
+                document.getElementById('adminNav').style.display = 'none';
+            }
+            
+            // Show/hide balance action buttons for non-admin users
+            const balanceActions = document.querySelector('.balance-actions');
+            if (isAdmin) {
+                balanceActions.style.display = 'flex';
+            } else {
+                balanceActions.style.display = 'none';
+            }
+            
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const user = users[currentUser];
+            
+            // Update balance display
+            document.getElementById('balanceAmount').textContent = `₣ ${user.balance.toLocaleString()}`;
+            document.getElementById('incomeAmount').textContent = `₣ ${user.income.toLocaleString()}`;
+            document.getElementById('frankbitAmount').textContent = `₣ ${user.balance.toLocaleString()}`;
+            
+            // Update rank
+            const sortedUsers = Object.entries(users).sort((a, b) => b[1].balance - a[1].balance);
+            const rank = sortedUsers.findIndex(u => u[0] === currentUser) + 1;
+            document.getElementById('userRank').textContent = `#${rank}`;
+            
+            // Update transactions
+            updateTransactions();
+            
+            // Update leaderboard
+            updateLeaderboard();
+            
+            // Update tasks and quests
+            updateTasks();
+            updateQuests();
+            
+            // Update exchange calculator
+            document.getElementById('exchangeAmount').addEventListener('input', calculateExchange);
+        }
+
+        function updateTransactions() {
+            const user = users[currentUser];
+            const transactionList = document.getElementById('transactionList');
+            
+            if (user.transactions.length === 0) {
+                transactionList.innerHTML = `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <h4>No transactions yet</h4>
+                            <div class="transaction-date">Start using Vaultyn today!</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            transactionList.innerHTML = user.transactions.slice().reverse().map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <h4>${t.type}</h4>
+                        <div class="transaction-date">${t.date}</div>
+                    </div>
+                    <div class="transaction-amount ${t.amount >= 0 ? 'positive' : 'negative'}">
+                        ${t.amount >= 0 ? '+' : ''}₣ ${Math.abs(t.amount).toLocaleString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateLeaderboard() {
+            const sortedUsers = Object.entries(users).sort((a, b) => b[1].balance - a[1].balance);
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            leaderboardList.innerHTML = sortedUsers.map((u, index) => {
+                let rankClass = '';
+                if (index === 0) rankClass = 'gold';
+                else if (index === 1) rankClass = 'silver';
+                else if (index === 2) rankClass = 'bronze';
+                
+                return `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank ${rankClass}">#${index + 1}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${u[0].charAt(0).toUpperCase() + u[0].slice(1)}</div>
+                        </div>
+                        <div class="leaderboard-balance">₣ ${u[1].balance.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateTasks() {
+            const user = users[currentUser];
+            const taskList = document.getElementById('taskList');
+            
+            if (globalTasks.length === 0) {
+                taskList.innerHTML = '<p style="color: #666; padding: 20px;">No tasks available yet. Check back soon!</p>';
+                return;
+            }
+            
+            taskList.innerHTML = globalTasks.map(task => {
+                const completed = user.completedTasks.includes(task.id);
+                return `
+                    <div class="task-card">
+                        <div class="task-info">
+                            <h3>${task.title}</h3>
+                            <div class="task-description">${task.description}</div>
+                            <div class="task-reward">Reward: ₣${task.reward}</div>
+                        </div>
+                        <button class="complete-btn" onclick="completeTask('${task.id}')" ${completed ? 'disabled' : ''}>
+                            ${completed ? 'Completed' : 'Complete'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateQuests() {
+            const user = users[currentUser];
+            const questList = document.getElementById('questList');
+            
+            if (globalQuests.length === 0) {
+                questList.innerHTML = '<p style="color: #666; padding: 20px;">No quests available yet. Check back soon!</p>';
+                return;
+            }
+            
+            questList.innerHTML = globalQuests.map(quest => {
+                const completed = user.completedQuests.includes(quest.id);
+                return `
+                    <div class="task-card">
+                        <div class="task-info">
+                            <h3>${quest.title}</h3>
+                            <div class="task-description">${quest.description}</div>
+                            <div class="task-reward">Reward: ₣${quest.reward}</div>
+                        </div>
+                        <button class="complete-btn" onclick="completeQuest('${quest.id}')" ${completed ? 'disabled' : ''}>
+                            ${completed ? 'Completed' : 'Complete'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function completeTask(taskId) {
+            const user = users[currentUser];
+            const task = globalTasks.find(t => t.id === taskId);
+            
+            if (!task || user.completedTasks.includes(taskId)) return;
+            
+            user.balance += task.reward;
+            user.completedTasks.push(taskId);
+            user.transactions.push({
+                type: `Task: ${task.title}`,
+                amount: task.reward,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            updateDashboard();
+            alert(`Task completed! You earned ₣${task.reward}`);
+        }
+
+        function completeQuest(questId) {
+            const user = users[currentUser];
+            const quest = globalQuests.find(q => q.id === questId);
+            
+            if (!quest || user.completedQuests.includes(questId)) return;
+            
+            user.balance += quest.reward;
+            user.completedQuests.push(questId);
+            user.transactions.push({
+                type: `Quest: ${quest.title}`,
+                amount: quest.reward,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            updateDashboard();
+            alert(`Quest completed! You earned ₣${quest.reward}`);
+        }
+
+        function calculateExchange() {
+            const amount = parseInt(document.getElementById('exchangeAmount').value) || 0;
+            const pesos = (amount / 100) * 10;
+            document.getElementById('pesosReceive').value = pesos.toFixed(2) + ' Pesos';
+        }
+
+        function exchangeFrankbits() {
+            const amount = parseInt(document.getElementById('exchangeAmount').value);
+            const user = users[currentUser];
+            
+            if (!amount || amount < 100 || amount > 5000) {
+                alert('Please enter an amount between 100 and 5000 Frankbits');
+                return;
+            }
+            
+            if (amount % 100 !== 0) {
+                alert('Amount must be in multiples of 100');
+                return;
+            }
+            
+            if (amount > user.balance) {
+                alert('Insufficient balance');
+                return;
+            }
+            
+            const pesos = (amount / 100) * 10;
+            user.balance -= amount;
+            user.transactions.push({
+                type: 'Exchange to Pesos',
+                amount: -amount,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            updateDashboard();
+            
+            // Generate transaction ID
+            const txId = 'TX' + Date.now().toString().slice(-8);
+            
+            // Show receipt
+            document.getElementById('exchangeForm').style.display = 'none';
+            document.getElementById('exchangeReceipt').style.display = 'block';
+            document.getElementById('receiptTxId').textContent = txId;
+            document.getElementById('receiptDate').textContent = new Date().toLocaleString();
+            document.getElementById('receiptUsername').textContent = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+            document.getElementById('receiptFrankbits').textContent = '₣ ' + amount.toLocaleString();
+            document.getElementById('receiptPesos').textContent = '₱ ' + pesos.toFixed(2);
+            
+            document.getElementById('exchangeAmount').value = '';
+            document.getElementById('pesosReceive').value = '';
+        }
+
+        function closeReceipt() {
+            document.getElementById('exchangeForm').style.display = 'block';
+            document.getElementById('exchangeReceipt').style.display = 'none';
+        }
+
+        function showTab(tabName) {
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Reset exchange form when switching tabs
+            if (tabName === 'exchange') {
+                closeReceipt();
+            }
+        }
+
+        function showAddBalanceModal() {
+            document.getElementById('addBalanceModal').classList.add('active');
+        }
+
+        function showAddIncomeModal() {
+            document.getElementById('addIncomeModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function addBalance() {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. This feature is only available to administrators.');
+                return;
+            }
+            
+            const amount = parseInt(document.getElementById('addBalanceInput').value);
+            const user = users[currentUser];
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            user.balance += amount;
+            user.transactions.push({
+                type: 'Balance Added',
+                amount: amount,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            updateDashboard();
+            closeModal('addBalanceModal');
+            document.getElementById('addBalanceInput').value = '';
+        }
+
+        function addIncome() {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. This feature is only available to administrators.');
+                return;
+            }
+            
+            const amount = parseInt(document.getElementById('addIncomeInput').value);
+            const user = users[currentUser];
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            user.income += amount;
+            user.balance += amount;
+            user.transactions.push({
+                type: 'Income Added',
+                amount: amount,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            updateDashboard();
+            closeModal('addIncomeModal');
+            document.getElementById('addIncomeInput').value = '';
+        }
+
+        // Admin functions
+        function searchUser() {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. Admin privileges required.');
+                return;
+            }
+            
+            const searchUsername = document.getElementById('adminSearchUser').value.trim().toLowerCase();
+            const resultDiv = document.getElementById('userSearchResult');
+            
+            if (!searchUsername) {
+                resultDiv.innerHTML = '<div class="alert alert-error">Please enter a username to search</div>';
+                return;
+            }
+            
+            if (!users[searchUsername]) {
+                resultDiv.innerHTML = '<div class="alert alert-error">User not found: ' + searchUsername + '</div>';
+                return;
+            }
+            
+            const userData = users[searchUsername];
+            resultDiv.innerHTML = `
+                <div class="user-result">
+                    <h3>${searchUsername.charAt(0).toUpperCase() + searchUsername.slice(1)}</h3>
+                    <div class="user-stat-row">
+                        <span class="receipt-label">Balance:</span>
+                        <span class="user-stat-value">₣${userData.balance.toLocaleString()}</span>
+                    </div>
+                    <div class="user-stat-row">
+                        <span class="receipt-label">Income:</span>
+                        <span class="user-stat-value">₣${userData.income.toLocaleString()}</span>
+                    </div>
+                    <div class="user-stat-row">
+                        <span class="receipt-label">Transactions:</span>
+                        <span class="user-stat-value">${userData.transactions.length}</span>
+                    </div>
+                    <div class="admin-controls">
+                        <input type="number" class="admin-input" id="setBalance_${searchUsername}" placeholder="Set Balance">
+                        <button class="admin-btn" onclick="setUserBalance('${searchUsername}')">Set Balance</button>
+                        <input type="number" class="admin-input" id="addBalance_${searchUsername}" placeholder="Add Balance">
+                        <button class="admin-btn" onclick="addUserBalance('${searchUsername}')">Add Balance</button>
+                        <input type="number" class="admin-input" id="setIncome_${searchUsername}" placeholder="Set Income">
+                        <button class="admin-btn" onclick="setUserIncome('${searchUsername}')">Set Income</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setUserBalance(username) {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. Admin privileges required.');
+                return;
+            }
+            
+            const newBalance = parseInt(document.getElementById(`setBalance_${username}`).value);
+            
+            if (isNaN(newBalance) || newBalance < 0) {
+                alert('Please enter a valid balance');
+                return;
+            }
+            
+            const oldBalance = users[username].balance;
+            users[username].balance = newBalance;
+            users[username].transactions.push({
+                type: 'Admin: Balance Set',
+                amount: newBalance - oldBalance,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            searchUser(); // Refresh the display
+            if (username === currentUser) updateDashboard();
+            alert(`Balance set to ₣${newBalance.toLocaleString()} for ${username}`);
+        }
+
+        function addUserBalance(username) {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. Admin privileges required.');
+                return;
+            }
+            
+            const addAmount = parseInt(document.getElementById(`addBalance_${username}`).value);
+            
+            if (isNaN(addAmount) || addAmount <= 0) {
+                alert('Please enter a valid amount to add');
+                return;
+            }
+            
+            users[username].balance += addAmount;
+            users[username].transactions.push({
+                type: 'Admin: Balance Added',
+                amount: addAmount,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            searchUser(); // Refresh the display
+            if (username === currentUser) updateDashboard();
+            alert(`Added ₣${addAmount.toLocaleString()} to ${username}'s balance`);
+        }
+
+        function setUserIncome(username) {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. Admin privileges required.');
+                return;
+            }
+            
+            const newIncome = parseInt(document.getElementById(`setIncome_${username}`).value);
+            
+            if (isNaN(newIncome) || newIncome < 0) {
+                alert('Please enter a valid income');
+                return;
+            }
+            
+            users[username].income = newIncome;
+            users[username].transactions.push({
+                type: 'Admin: Income Updated',
+                amount: 0,
+                date: new Date().toLocaleString()
+            });
+            
+            saveData();
+            searchUser(); // Refresh the display
+            if (username === currentUser) updateDashboard();
+            alert(`Income set to ₣${newIncome.toLocaleString()} for ${username}`);
+        }
+
+        function createTask() {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. Admin privileges required.');
+                return;
+            }
+            
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const reward = parseInt(document.getElementById('taskReward').value);
+            
+            if (!title || !description || !reward) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const newTask = {
+                id: 'task' + Date.now(),
+                title: title,
+                description: description,
+                reward: reward
+            };
+            
+            globalTasks.push(newTask);
+            localStorage.setItem('vaultynTasks', JSON.stringify(globalTasks));
+            
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskReward').value = '';
+            
+            updateTasks();
+            alert('Task created successfully!');
+        }
+
+        function createQuest() {
+            // Admin-only function
+            if (currentUser !== 'rhon' && currentUser !== 'charles') {
+                alert('Access denied. Admin privileges required.');
+                return;
+            }
+            
+            const title = document.getElementById('questTitle').value;
+            const description = document.getElementById('questDescription').value;
+            const reward = parseInt(document.getElementById('questReward').value);
+            
+            if (!title || !description || !reward) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const newQuest = {
+                id: 'quest' + Date.now(),
+                title: title,
+                description: description,
+                reward: reward
+            };
+            
+            globalQuests.push(newQuest);
+            localStorage.setItem('vaultynQuests', JSON.stringify(globalQuests));
+            
+            document.getElementById('questTitle').value = '';
+            document.getElementById('questDescription').value = '';
+            document.getElementById('questReward').value = '';
+            
+            updateQuests();
+            alert('Quest created successfully!');
+        }
+
+        // Check if user is already logged in
+        if (currentUser && users[currentUser]) {
+            showDashboard();
+        }
+    </script>
+</body>
+</html>
