@@ -1127,20 +1127,30 @@
         // Sync Users
         db.ref('users').on('value', (snapshot) => {
             users = snapshot.val() || {};
-            if (currentUser) updateDashboard();
+            if (currentUser) {
+                // UPDATE: Check for Ban
+                if (users[currentUser] && users[currentUser].banned) {
+                    alert("Account Banned: " + (users[currentUser].banReason || "No reason provided"));
+                    logout();
+                    return;
+                }
+                updateDashboard();
+            }
         });
 
         // Sync Tasks
         db.ref('tasks').on('value', (snapshot) => {
             const data = snapshot.val();
-            globalTasks = data ? Object.values(data) : [];
+            // UPDATE: Map keys to firebase IDs for deletion
+            globalTasks = data ? Object.entries(data).map(([id, val]) => ({...val, id: id})) : [];
             if (currentUser) updateTasks();
         });
 
         // Sync Quests
         db.ref('quests').on('value', (snapshot) => {
             const data = snapshot.val();
-            globalQuests = data ? Object.values(data) : [];
+            // UPDATE: Map keys to firebase IDs for deletion
+            globalQuests = data ? Object.entries(data).map(([id, val]) => ({...val, id: id})) : [];
             if (currentUser) updateQuests();
         });
 
@@ -1152,6 +1162,8 @@
             if (!username || !password) return alert('Fill fields');
 
             if (users[username] && users[username].password === password) {
+                // UPDATE: Check for Ban on login
+                if (users[username].banned) return alert("Account Banned: " + users[username].banReason);
                 currentUser = username;
                 localStorage.setItem('vaultynCurrentUser', currentUser);
                 showDashboard();
@@ -1175,7 +1187,9 @@
                 income: 0,
                 transactions: [],
                 completedTasks: [],
-                completedQuests: []
+                completedQuests: [],
+                banned: false,
+                banReason: ""
             });
             alert('Created! Now log in.');
         }
@@ -1246,6 +1260,7 @@
         function updateTasks() {
             const user = users[currentUser];
             const list = document.getElementById('taskList');
+            const isAdmin = (currentUser === 'rhon' || currentUser === 'charles');
             if (globalTasks.length === 0) return list.innerHTML = '<p>No tasks yet.</p>';
 
             list.innerHTML = globalTasks.map(t => {
@@ -1253,9 +1268,12 @@
                 return `
                     <div class="task-card">
                         <div class="task-info"><h3>${t.title}</h3><p>${t.description}</p><p class="task-reward">₣${t.reward}</p></div>
-                        <button class="complete-btn" onclick="claimTask('tasks', '${t.id}', ${t.reward})" ${done ? 'disabled' : ''}>
-                            ${done ? 'Done' : 'Claim'}
-                        </button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="complete-btn" onclick="claimTask('tasks', '${t.id}', ${t.reward})" ${done ? 'disabled' : ''}>
+                                ${done ? 'Done' : 'Claim'}
+                            </button>
+                            ${isAdmin ? `<button class="complete-btn" style="background:#dc3545;" onclick="adminDeleteItem('tasks', '${t.id}')">Delete</button>` : ''}
+                        </div>
                     </div>`;
             }).join('');
         }
@@ -1263,6 +1281,7 @@
         function updateQuests() {
             const user = users[currentUser];
             const list = document.getElementById('questList');
+            const isAdmin = (currentUser === 'rhon' || currentUser === 'charles');
             if (globalQuests.length === 0) return list.innerHTML = '<p>No quests yet.</p>';
 
             list.innerHTML = globalQuests.map(q => {
@@ -1270,9 +1289,12 @@
                 return `
                     <div class="task-card">
                         <div class="task-info"><h3>${q.title}</h3><p>${q.description}</p><p class="task-reward">₣${q.reward}</p></div>
-                        <button class="complete-btn" onclick="claimTask('quests', '${q.id}', ${q.reward})" ${done ? 'disabled' : ''}>
-                            ${done ? 'Done' : 'Claim'}
-                        </button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="complete-btn" onclick="claimTask('quests', '${q.id}', ${q.reward})" ${done ? 'disabled' : ''}>
+                                ${done ? 'Done' : 'Claim'}
+                            </button>
+                            ${isAdmin ? `<button class="complete-btn" style="background:#dc3545;" onclick="adminDeleteItem('quests', '${q.id}')">Delete</button>` : ''}
+                        </div>
                     </div>`;
             }).join('');
         }
@@ -1296,12 +1318,14 @@
 
             res.innerHTML = `
                 <div class="user-result">
-                    <h3>${name}</h3>
+                    <h3>${name} ${target.banned ? '<span style="color:red">(BANNED)</span>' : ''}</h3>
                     <p>Balance: ₣${target.balance}</p>
                     <div class="admin-controls">
                         <input type="number" class="admin-input" id="admInp" placeholder="Amount">
                         <button class="admin-btn" onclick="adminAdjust('${name}', 'balance')">Set Bal</button>
                         <button class="admin-btn" onclick="adminAdjust('${name}', 'add')">Add Bal</button>
+                        <button class="admin-btn" style="background:#000" onclick="adminBanUser('${name}')">${target.banned ? 'Unban' : 'Ban'}</button>
+                        <button class="admin-btn" style="background:#dc3545" onclick="adminDeleteUser('${name}')">Delete Account</button>
                     </div>
                 </div>`;
         }
@@ -1315,6 +1339,38 @@
                 type: 'Admin Edit', amount: type === 'add' ? val : (final - users[target].balance), date: new Date().toLocaleString()
             });
             searchUser();
+        }
+
+        // UPDATE: Admin Ban Account
+        function adminBanUser(target) {
+            if (users[target].banned) {
+                db.ref(`users/${target}`).update({ banned: false, banReason: "" });
+                alert("User Unbanned");
+            } else {
+                const reason = prompt("Enter ban reason:");
+                if (reason === null) return;
+                db.ref(`users/${target}`).update({ banned: true, banReason: reason });
+                alert("User Banned");
+            }
+            searchUser();
+        }
+
+        // UPDATE: Admin Delete Account
+        function adminDeleteUser(target) {
+            if (confirm("Are you sure you want to PERMANENTLY DELETE this account?")) {
+                db.ref(`users/${target}`).remove();
+                alert("Account Deleted");
+                document.getElementById('userSearchResult').innerHTML = "";
+            }
+        }
+
+        // UPDATE: Admin Delete Task/Quest
+        function adminDeleteItem(type, id) {
+            if (confirm("Delete this " + type.slice(0,-1) + " permanently?")) {
+                db.ref(type + '/' + id).remove()
+                .then(() => alert("Deleted!"))
+                .catch(e => alert("Error: " + e.message));
+            }
         }
 
         function createTask() {
