@@ -208,6 +208,7 @@
             padding: 0 30px;
             display: flex;
             gap: 5px;
+            flex-wrap: wrap; /* Added wrap for mobile */
         }
 
         .nav-item {
@@ -476,6 +477,135 @@
             font-size: 0.9em;
             color: #6c7378;
             margin-top: 8px;
+        }
+
+        /* NEW FEATURES CSS */
+
+        /* Chat Styles */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f5f7fa;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            position: relative;
+        }
+        .chat-msg.others {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e1e8ee;
+            border-bottom-left-radius: 2px;
+        }
+        .chat-msg.me {
+            align-self: flex-end;
+            background: #0070ba;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-sender {
+            font-size: 0.75em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #e1e8ee;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Gift Styles */
+        .gift-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .gift-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .gift-icon {
+            font-size: 3em;
+            color: #ff4757;
+            margin-bottom: 20px;
+        }
+        .generated-code {
+            background: #2c2e2f;
+            color: #2ecc71;
+            font-family: monospace;
+            padding: 15px;
+            font-size: 1.5em;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Passes/Store Styles */
+        .passes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .pass-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            border: 1px solid #e1e8ee;
+        }
+        .pass-card:hover {
+            transform: translateY(-5px);
+            border-color: #0070ba;
+        }
+        .pass-header {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+        }
+        .pass-robux { background: linear-gradient(45deg, #ce0000, #ff2d2d); }
+        .pass-mlbb { background: linear-gradient(45deg, #2c3e50, #3498db); }
+        .pass-codm { background: linear-gradient(45deg, #f1c40f, #f39c12); }
+        
+        .pass-body {
+            padding: 20px;
+            text-align: center;
+        }
+        .pass-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .pass-price {
+            color: #0070ba;
+            font-weight: 500;
+            margin-bottom: 15px;
         }
 
         /* Tasks & Quests */
@@ -750,32 +880,6 @@
             font-weight: 600;
         }
 
-        /* Alerts */
-        .alert {
-            padding: 16px 20px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 0.95em;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .top-header {
@@ -790,7 +894,6 @@
             }
 
             .nav-bar {
-                overflow-x: auto;
                 padding: 0 15px;
             }
 
@@ -805,6 +908,8 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .gift-wrapper { grid-template-columns: 1fr; }
 
             .task-card {
                 flex-direction: column;
@@ -880,6 +985,18 @@
                 <i class="fas fa-exchange-alt"></i>
                 <span>Exchange</span>
             </div>
+            <div class="nav-item" onclick="showTab('chat')">
+                <i class="fas fa-comments"></i>
+                <span>Global Chat</span>
+            </div>
+            <div class="nav-item" onclick="showTab('gifting')">
+                <i class="fas fa-gift"></i>
+                <span>Gifts</span>
+            </div>
+            <div class="nav-item" onclick="showTab('passes')">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Passes</span>
+            </div>
             <div class="nav-item" onclick="showTab('tasks')">
                 <i class="fas fa-tasks"></i>
                 <span>Tasks</span>
@@ -947,6 +1064,85 @@
                     <div class="leaderboard-list" id="leaderboardList"></div>
                 </div>
 
+                <div class="tab-content" id="chatTab">
+                    <h1 class="page-title">Global Chat</h1>
+                    <p class="page-subtitle">Chat with other Vaultyn users in real-time</p>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div style="text-align:center; color:#999; margin-top:20px;">Loading chat...</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" class="input-group input" style="margin:0; flex:1;" placeholder="Type a message...">
+                            <button class="btn" style="width: auto;" onclick="sendChatMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="giftingTab">
+                    <h1 class="page-title">Gift Center</h1>
+                    <p class="page-subtitle">Create gifts for friends or claim codes</p>
+                    
+                    <div class="gift-wrapper">
+                        <div class="gift-box">
+                            <i class="fas fa-gift gift-icon"></i>
+                            <h3>Send a Gift</h3>
+                            <p style="color:#6c7378; margin-bottom:15px; font-size:0.9em;">Create a redeemable code with Frankbits.</p>
+                            <div class="input-group">
+                                <input type="number" id="giftAmount" placeholder="Amount to gift (e.g., 500)">
+                            </div>
+                            <button class="btn" onclick="createGift()">Generate Code</button>
+                            <div id="giftResult" style="display:none;">
+                                <p style="margin-top:15px; font-size:0.9em;">Share this code (Click to copy):</p>
+                                <div class="generated-code" id="giftCodeDisplay" onclick="copyGiftCode()">-</div>
+                            </div>
+                        </div>
+
+                        <div class="gift-box">
+                            <i class="fas fa-hand-holding-heart gift-icon" style="color:#0070ba;"></i>
+                            <h3>Claim a Gift</h3>
+                            <p style="color:#6c7378; margin-bottom:15px; font-size:0.9em;">Received a code? Redeem it here.</p>
+                            <div class="input-group">
+                                <input type="text" id="claimCodeInput" placeholder="Enter Gift Code">
+                            </div>
+                            <button class="btn btn-secondary" onclick="claimGift()">Claim Gift</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="passesTab">
+                    <h1 class="page-title">Game Store</h1>
+                    <p class="page-subtitle">Exchange Frankbits for Game Credits (Instant Code)</p>
+                    
+                    <div class="passes-grid">
+                        <div class="pass-card">
+                            <div class="pass-header pass-robux"><i class="fas fa-cube"></i></div>
+                            <div class="pass-body">
+                                <div class="pass-title">480 Robux</div>
+                                <div class="pass-price">5,000 Frankbits</div>
+                                <button class="btn" onclick="buyPass('Robux', 5000, '480 Robux')">Purchase</button>
+                            </div>
+                        </div>
+
+                        <div class="pass-card">
+                            <div class="pass-header pass-mlbb"><i class="fas fa-gem"></i></div>
+                            <div class="pass-body">
+                                <div class="pass-title">500 Diamonds (MLBB)</div>
+                                <div class="pass-price">5,000 Frankbits</div>
+                                <button class="btn" onclick="buyPass('MLBB', 5000, '500 Diamonds')">Purchase</button>
+                            </div>
+                        </div>
+
+                        <div class="pass-card">
+                            <div class="pass-header pass-codm"><i class="fas fa-crosshairs"></i></div>
+                            <div class="pass-body">
+                                <div class="pass-title">250 CP (CODM)</div>
+                                <div class="pass-price">5,000 Frankbits</div>
+                                <button class="btn" onclick="buyPass('CODM', 5000, '250 CP')">Purchase</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="tab-content" id="exchangeTab">
                     <h1 class="page-title">Currency Exchange</h1>
                     <p class="page-subtitle">Convert your Frankbits to Pesos</p>
@@ -960,10 +1156,6 @@
                             <div class="input-group">
                                 <label for="exchangeAmount">Frankbits to Exchange</label>
                                 <input type="number" id="exchangeAmount" placeholder="Enter amount (100-5000)" min="100" max="5000" step="100">
-                            </div>
-                            <div class="input-group">
-                                <label>You will receive</label>
-                                <input type="text" id="pesosReceive" readonly placeholder="0 Pesos">
                             </div>
                             <button class="btn" onclick="exchangeFrankbits()">Exchange Now</button>
                         </div>
@@ -1128,7 +1320,6 @@
         db.ref('users').on('value', (snapshot) => {
             users = snapshot.val() || {};
             if (currentUser) {
-                // UPDATE: Check for Ban
                 if (users[currentUser] && users[currentUser].banned) {
                     alert("Account Banned: " + (users[currentUser].banReason || "No reason provided"));
                     logout();
@@ -1141,7 +1332,6 @@
         // Sync Tasks
         db.ref('tasks').on('value', (snapshot) => {
             const data = snapshot.val();
-            // UPDATE: Map keys to firebase IDs for deletion
             globalTasks = data ? Object.entries(data).map(([id, val]) => ({...val, id: id})) : [];
             if (currentUser) updateTasks();
         });
@@ -1149,9 +1339,31 @@
         // Sync Quests
         db.ref('quests').on('value', (snapshot) => {
             const data = snapshot.val();
-            // UPDATE: Map keys to firebase IDs for deletion
             globalQuests = data ? Object.entries(data).map(([id, val]) => ({...val, id: id})) : [];
             if (currentUser) updateQuests();
+        });
+
+        // Sync Chat (NEW)
+        db.ref('chat').limitToLast(50).on('value', (snapshot) => {
+            const chatBox = document.getElementById('chatMessages');
+            const data = snapshot.val();
+            if (!data) {
+                chatBox.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">No messages yet. Say hi!</div>';
+                return;
+            }
+            
+            chatBox.innerHTML = '';
+            Object.values(data).forEach(msg => {
+                const isMe = msg.user === currentUser;
+                const div = document.createElement('div');
+                div.className = `chat-msg ${isMe ? 'me' : 'others'}`;
+                div.innerHTML = `
+                    <div class="chat-sender">${isMe ? 'You' : msg.user}</div>
+                    ${msg.text}
+                `;
+                chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
         });
 
         // 4. Core App Functions
@@ -1162,7 +1374,6 @@
             if (!username || !password) return alert('Fill fields');
 
             if (users[username] && users[username].password === password) {
-                // UPDATE: Check for Ban on login
                 if (users[username].banned) return alert("Account Banned: " + users[username].banReason);
                 currentUser = username;
                 localStorage.setItem('vaultynCurrentUser', currentUser);
@@ -1180,7 +1391,6 @@
             const password = prompt('Enter a password:');
             if (!password) return;
 
-            // Online register with 0 balance
             db.ref('users/' + username).set({
                 password: password,
                 balance: 0,
@@ -1241,7 +1451,11 @@
             
             list.innerHTML = txs.slice().reverse().map(t => `
                 <div class="transaction-item">
-                    <div class="transaction-info"><h4>${t.type}</h4><small>${t.date}</small></div>
+                    <div class="transaction-info">
+                        <h4>${t.type}</h4>
+                        <small>${t.date}</small>
+                        ${t.details ? `<div style="font-size:0.8em; color:#6c7378;">${t.details}</div>` : ''}
+                    </div>
                     <div class="transaction-amount ${t.amount >= 0 ? 'positive' : 'negative'}">
                         ${t.amount >= 0 ? '+' : ''}₣ ${Math.abs(t.amount).toLocaleString()}
                     </div>
@@ -1309,6 +1523,165 @@
             alert('Claimed!');
         }
 
+        /* --- NEW FUNCTIONALITY SCRIPTS --- */
+
+        // 1. EXCHANGE FUNCTION (Updated)
+        function exchangeFrankbits() {
+            const amount = parseInt(document.getElementById('exchangeAmount').value);
+            const user = users[currentUser];
+
+            if (isNaN(amount) || amount < 100 || amount > 5000) {
+                return alert("Please enter a valid amount between 100 and 5000.");
+            }
+
+            if (user.balance < amount) {
+                return alert("Insufficient Frankbits!");
+            }
+
+            // Calculate Pesos (100 FB = 10 Pesos -> 10 FB = 1 Peso)
+            const pesos = (amount / 10).toFixed(2);
+            const txId = 'TX-' + Math.floor(Math.random() * 1000000);
+            const dateStr = new Date().toLocaleString();
+
+            // Update Database
+            const newBal = user.balance - amount;
+            db.ref(`users/${currentUser}`).update({ balance: newBal });
+            
+            db.ref(`users/${currentUser}/transactions`).push({
+                type: 'Currency Exchange',
+                amount: -amount,
+                date: dateStr,
+                details: `Exchanged for ₱${pesos}`
+            });
+
+            // Populate Receipt
+            document.getElementById('receiptTxId').innerText = txId;
+            document.getElementById('receiptDate').innerText = dateStr;
+            document.getElementById('receiptUsername').innerText = currentUser;
+            document.getElementById('receiptFrankbits').innerText = amount;
+            document.getElementById('receiptPesos').innerText = `₱${pesos}`;
+
+            // Show Receipt
+            document.getElementById('exchangeForm').style.display = 'none';
+            document.getElementById('exchangeReceipt').style.display = 'block';
+        }
+
+        function closeReceipt() {
+            document.getElementById('exchangeForm').style.display = 'block';
+            document.getElementById('exchangeReceipt').style.display = 'none';
+            document.getElementById('exchangeAmount').value = '';
+        }
+
+        // 2. CHAT FUNCTION
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            db.ref('chat').push({
+                user: currentUser,
+                text: text,
+                time: Date.now()
+            });
+            input.value = '';
+        }
+
+        // 3. GIFT FUNCTION
+        function generateRandomCode() {
+            return 'GIFT-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+
+        function createGift() {
+            const amount = parseInt(document.getElementById('giftAmount').value);
+            const user = users[currentUser];
+
+            if(isNaN(amount) || amount <= 0) return alert("Enter valid amount");
+            if(user.balance < amount) return alert("Insufficient balance");
+
+            // Deduct balance
+            db.ref(`users/${currentUser}`).update({ balance: user.balance - amount });
+            
+            // Create code
+            const code = generateRandomCode();
+            db.ref(`gifts/${code}`).set({
+                amount: amount,
+                creator: currentUser,
+                created: Date.now()
+            });
+
+            // Add Transaction
+            db.ref(`users/${currentUser}/transactions`).push({
+                type: 'Gift Created',
+                amount: -amount,
+                date: new Date().toLocaleString(),
+                details: `Code: ${code}`
+            });
+
+            // Show UI
+            document.getElementById('giftResult').style.display = 'block';
+            document.getElementById('giftCodeDisplay').innerText = code;
+        }
+
+        function copyGiftCode() {
+            const code = document.getElementById('giftCodeDisplay').innerText;
+            navigator.clipboard.writeText(code).then(() => alert("Code copied!"));
+        }
+
+        function claimGift() {
+            const code = document.getElementById('claimCodeInput').value.trim();
+            if(!code) return;
+
+            db.ref(`gifts/${code}`).once('value').then(snapshot => {
+                const gift = snapshot.val();
+                if(!gift) {
+                    alert("Invalid or already claimed code!");
+                    return;
+                }
+
+                // Add balance to claimer
+                const user = users[currentUser];
+                db.ref(`users/${currentUser}`).update({ balance: user.balance + gift.amount });
+
+                // Add Transaction
+                db.ref(`users/${currentUser}/transactions`).push({
+                    type: 'Gift Claimed',
+                    amount: gift.amount,
+                    date: new Date().toLocaleString(),
+                    details: `From: ${gift.creator}`
+                });
+
+                // Delete gift (One time use)
+                db.ref(`gifts/${code}`).remove();
+
+                alert(`Success! You claimed ${gift.amount} Frankbits.`);
+                document.getElementById('claimCodeInput').value = '';
+            });
+        }
+
+        // 4. PASSES FUNCTION
+        function buyPass(type, cost, name) {
+            const user = users[currentUser];
+            if(user.balance < cost) return alert("Insufficient Frankbits to buy this pass.");
+
+            if(confirm(`Buy ${name} for ${cost} Frankbits?`)) {
+                // Deduct
+                db.ref(`users/${currentUser}`).update({ balance: user.balance - cost });
+
+                // Generate Dummy Redemption Code
+                const redeemCode = `${type.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+                // Transaction
+                db.ref(`users/${currentUser}/transactions`).push({
+                    type: 'Store Purchase',
+                    amount: -cost,
+                    date: new Date().toLocaleString(),
+                    details: `Bought ${name}`
+                });
+
+                alert(`Purchase Successful!\n\nYour Redemption Code: ${redeemCode}\n\nPlease save this code!`);
+            }
+        }
+
         // 5. Admin Panel Functions
         function searchUser() {
             const name = document.getElementById('adminSearchUser').value.trim().toLowerCase();
@@ -1341,7 +1714,6 @@
             searchUser();
         }
 
-        // UPDATE: Admin Ban Account
         function adminBanUser(target) {
             if (users[target].banned) {
                 db.ref(`users/${target}`).update({ banned: false, banReason: "" });
@@ -1355,7 +1727,6 @@
             searchUser();
         }
 
-        // UPDATE: Admin Delete Account
         function adminDeleteUser(target) {
             if (confirm("Are you sure you want to PERMANENTLY DELETE this account?")) {
                 db.ref(`users/${target}`).remove();
@@ -1364,7 +1735,6 @@
             }
         }
 
-        // UPDATE: Admin Delete Task/Quest
         function adminDeleteItem(type, id) {
             if (confirm("Delete this " + type.slice(0,-1) + " permanently?")) {
                 db.ref(type + '/' + id).remove()
